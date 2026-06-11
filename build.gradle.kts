@@ -21,6 +21,8 @@ dependencies {
     }
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    // The IntelliJ platform test initializer on the injected test classpath needs JUnit 4 classes
+    testRuntimeOnly("junit:junit:4.13.2")
     testImplementation(kotlin("stdlib"))
 }
 
