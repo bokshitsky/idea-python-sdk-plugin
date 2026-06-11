@@ -51,6 +51,6 @@ class VenvInterpreterFinderTest {
 
     @Test
     fun `venv folder names constant covers required names`() {
-        assertEquals(setOf(".venv", "venv", ".virtual_env"), VENV_DIR_NAMES)
+        assertEquals(setOf(".venv", "venv", ".virtual_env", ".virtualenv"), VENV_DIR_NAMES)
     }
 }
