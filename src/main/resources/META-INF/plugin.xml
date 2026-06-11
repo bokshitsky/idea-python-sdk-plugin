@@ -5,4 +5,17 @@
     <description>Adds an "Add Python SDK" action to the Project View context menu of virtualenv folders (.venv, venv, .virtual_env). Registers the interpreter as a Python SDK and assigns it to the containing module.</description>
     <depends>com.intellij.modules.platform</depends>
     <depends>PythonCore</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Add Python SDK" displayType="BALLOON"/>
+    </extensions>
+
+    <actions>
+        <action id="AddPythonSdk.AddPythonSdkAction"
+                class="com.boksh.addpythonsdk.AddPythonSdkAction"
+                text="Add Python SDK"
+                description="Register this virtualenv as a Python SDK and assign it to the module">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>
