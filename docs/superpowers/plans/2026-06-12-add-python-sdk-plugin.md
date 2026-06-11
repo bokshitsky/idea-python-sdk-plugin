@@ -20,12 +20,12 @@
 - Create: `src/main/resources/META-INF/plugin.xml` (minimal, filled in Task 3)
 - Create: gradle wrapper (`gradlew`, `gradle/wrapper/*`)
 
-- [ ] **Step 1: Check toolchain availability**
+- [x] **Step 1: Check toolchain availability**
 
 Run: `java -version; which gradle`
 Expected: some JDK present. If `gradle` is missing, install via `brew install gradle` or download a distribution; the wrapper is generated once and used afterwards.
 
-- [ ] **Step 2: Determine a compatible PythonCore plugin version**
+- [x] **Step 2: Determine a compatible PythonCore plugin version**
 
 The `PythonCore` marketplace plugin version must match the target IDE build (we target IDEA Community 2024.3, branch `243`). Query the marketplace:
 
@@ -33,7 +33,7 @@ Run: `curl -s "https://plugins.jetbrains.com/api/plugins/PythonCore/updates?size
 
 Pick the newest version whose `since`/`until` range includes build `243.*` and use it in `build.gradle.kts` below (placeholder `<PYTHON_CORE_VERSION>`).
 
-- [ ] **Step 3: Create the build files**
+- [x] **Step 3: Create the build files**
 
 `settings.gradle.kts`:
 ```kotlin
@@ -116,17 +116,17 @@ build/
 </idea-plugin>
 ```
 
-- [ ] **Step 4: Generate the wrapper**
+- [x] **Step 4: Generate the wrapper**
 
 Run: `gradle wrapper --gradle-version 8.13`
 Expected: `gradlew`, `gradlew.bat`, `gradle/wrapper/` created.
 
-- [ ] **Step 5: Verify the project configures and compiles**
+- [x] **Step 5: Verify the project configures and compiles**
 
 Run: `./gradlew compileKotlin`
 Expected: `BUILD SUCCESSFUL` (downloads the IDE and PythonCore on first run; may take several minutes).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add settings.gradle.kts build.gradle.kts gradle.properties .gitignore gradlew gradlew.bat gradle/ src/
@@ -141,7 +141,7 @@ git commit -m "build: scaffold IntelliJ plugin project with PythonCore dependenc
 - Create: `src/main/kotlin/com/boksh/addpythonsdk/VenvInterpreterFinder.kt`
 - Test: `src/test/kotlin/com/boksh/addpythonsdk/VenvInterpreterFinderTest.kt`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `src/test/kotlin/com/boksh/addpythonsdk/VenvInterpreterFinderTest.kt`:
 ```kotlin
@@ -203,12 +203,12 @@ class VenvInterpreterFinderTest {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `./gradlew test --tests "com.boksh.addpythonsdk.VenvInterpreterFinderTest"`
 Expected: FAIL — compilation error, `findVenvInterpreter` / `VENV_DIR_NAMES` unresolved.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `src/main/kotlin/com/boksh/addpythonsdk/VenvInterpreterFinder.kt`:
 ```kotlin
@@ -225,12 +225,12 @@ fun findVenvInterpreter(venvDir: Path): Path? =
         .firstOrNull(Files::exists)
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `./gradlew test --tests "com.boksh.addpythonsdk.VenvInterpreterFinderTest"`
 Expected: PASS, 6 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/main/kotlin/com/boksh/addpythonsdk/VenvInterpreterFinder.kt src/test/kotlin/com/boksh/addpythonsdk/VenvInterpreterFinderTest.kt
@@ -247,7 +247,7 @@ git commit -m "feat: add virtualenv interpreter discovery"
 
 The action's behavior depends on live platform services (SDK table, modules), so it is verified by `runIde` in Task 4 rather than unit tests; all pure logic was extracted and tested in Task 2.
 
-- [ ] **Step 1: Write the action**
+- [x] **Step 1: Write the action**
 
 `src/main/kotlin/com/boksh/addpythonsdk/AddPythonSdkAction.kt`:
 ```kotlin
@@ -318,7 +318,7 @@ class AddPythonSdkAction : AnAction() {
 }
 ```
 
-- [ ] **Step 2: Register the action and notification group in plugin.xml**
+- [x] **Step 2: Register the action and notification group in plugin.xml**
 
 Replace `src/main/resources/META-INF/plugin.xml` with:
 ```xml
@@ -345,17 +345,17 @@ Replace `src/main/resources/META-INF/plugin.xml` with:
 </idea-plugin>
 ```
 
-- [ ] **Step 3: Build the plugin**
+- [x] **Step 3: Build the plugin**
 
 Run: `./gradlew buildPlugin`
 Expected: `BUILD SUCCESSFUL`, zip in `build/distributions/`.
 
-- [ ] **Step 4: Run the plugin verifier checks built into the build**
+- [x] **Step 4: Run the plugin verifier checks built into the build**
 
 Run: `./gradlew verifyPluginStructure`
 Expected: no errors (warnings acceptable).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/main/kotlin/com/boksh/addpythonsdk/AddPythonSdkAction.kt src/main/resources/META-INF/plugin.xml
@@ -368,12 +368,12 @@ git commit -m "feat: add Add Python SDK action for virtualenv folders"
 
 **Files:** none (verification only)
 
-- [ ] **Step 1: Launch a sandbox IDE**
+- [x] **Step 1: Launch a sandbox IDE**
 
 Run: `./gradlew runIde`
 Expected: IDEA Community 2024.3 sandbox starts with the plugin and PythonCore installed.
 
-- [ ] **Step 2: Verify in the sandbox (user-driven)**
+- [x] **Step 2: Verify in the sandbox (user-driven)**
 
 1. Create/open a project containing a virtualenv: `python3 -m venv .venv` in the project root.
 2. Right-click `.venv` in the Project View → "Add Python SDK" is present.
@@ -381,7 +381,7 @@ Expected: IDEA Community 2024.3 sandbox starts with the plugin and PythonCore in
 4. Invoke the action on `.venv` → success notification; File → Project Structure → SDKs shows the new Python SDK; the module SDK is set to it.
 5. Invoke again → no duplicate SDK appears in the SDK table.
 
-- [ ] **Step 3: Commit plan checkboxes and wrap up**
+- [x] **Step 3: Commit plan checkboxes and wrap up**
 
 ```bash
 git add docs/
