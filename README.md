@@ -1,0 +1,5 @@
+## Build plugin
+
+```
+./gradlew buildPlugin
+```
