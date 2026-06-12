@@ -37,6 +37,10 @@ intellijPlatform {
         }
     }
     buildSearchableOptions = false
+
+    publishing {
+        token = providers.environmentVariable("IDEA_PYTHON_SDK_PLUGIN_UPLOAD_TOKEN")
+    }
 }
 
 tasks.test {
