@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.boksh"
-version = "1.0.0"
+version = providers.gradleProperty("version").getOrElse("1.0.0")
 
 repositories {
     mavenCentral()
