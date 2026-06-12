@@ -6,11 +6,11 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
 import com.intellij.openapi.roots.ModuleRootModificationUtil
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.jetbrains.python.sdk.PythonSdkType
 import java.nio.file.Paths
 
@@ -42,7 +42,9 @@ class AddPythonSdkAction : AnAction() {
             return
         }
 
-        val module = ModuleUtilCore.findModuleForFile(venvDir, project)
+        // honorExclusion=false: venv folders are normally excluded from their module,
+        // but the excluding module is exactly the one the SDK should be assigned to
+        val module = ProjectFileIndex.getInstance(project).getModuleForFile(venvDir, false)
         if (module == null) {
             notify(
                 project,
