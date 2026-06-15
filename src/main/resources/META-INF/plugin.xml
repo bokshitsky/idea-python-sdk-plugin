@@ -2,7 +2,7 @@
     <id>com.boksh.add-python-sdk</id>
     <name>Add Python SDK</name>
     <vendor email="bokshitsky@gmail.com">Evgeny Bokshitsky</vendor>
-    <description>Adds an "Add Python SDK" action to the Project View context menu of virtualenv folders (.venv, venv, .virtual_env, .virtualenv). Registers the interpreter as a Python SDK and assigns it to the containing module.</description>
+    <description>Adds "Add Python SDK" items to the Project View context menu. On virtualenv folders (.venv, venv, .virtual_env, .virtualenv) it registers the interpreter inside the folder. On module folders that contain a pyproject.toml it offers "Add Python SDK | From Poetry", which runs "poetry env info --path" and uses the active Poetry virtualenv. In both cases the interpreter is registered as a Python SDK and assigned to the containing module.</description>
     <depends>com.intellij.modules.platform</depends>
     <depends>PythonCore</depends>
 
