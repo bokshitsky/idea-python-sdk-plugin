@@ -17,5 +17,16 @@
                 description="Register this virtualenv as a Python SDK and assign it to the module">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
+
+        <group id="AddPythonSdk.AddPythonSdkGroup"
+               class="com.boksh.addpythonsdk.AddPythonSdkGroup"
+               text="Add Python SDK"
+               popup="true">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <action id="AddPythonSdk.AddPoetrySdkAction"
+                    class="com.boksh.addpythonsdk.AddPoetrySdkAction"
+                    text="From Poetry"
+                    description="Resolve the active Poetry environment (poetry env info) and assign it to the module"/>
+        </group>
     </actions>
 </idea-plugin>

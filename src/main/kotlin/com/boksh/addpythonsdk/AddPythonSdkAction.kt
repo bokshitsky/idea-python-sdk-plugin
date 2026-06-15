@@ -1,17 +1,10 @@
 package com.boksh.addpythonsdk
 
-import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.projectRoots.ProjectJdkTable
-import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
-import com.intellij.openapi.roots.ModuleRootModificationUtil
-import com.intellij.openapi.roots.ProjectFileIndex
-import com.jetbrains.python.sdk.PythonSdkType
 import java.nio.file.Paths
 
 class AddPythonSdkAction : AnAction() {
@@ -34,34 +27,6 @@ class AddPythonSdkAction : AnAction() {
             return
         }
 
-        val interpreterPath = interpreter.toString()
-        val sdk = ProjectJdkTable.getInstance().allJdks.firstOrNull { it.homePath == interpreterPath }
-            ?: SdkConfigurationUtil.createAndAddSDK(interpreterPath, PythonSdkType.getInstance())
-        if (sdk == null) {
-            notify(project, "Failed to create a Python SDK for '$interpreterPath'.", NotificationType.ERROR)
-            return
-        }
-
-        // honorExclusion=false: venv folders are normally excluded from their module,
-        // but the excluding module is exactly the one the SDK should be assigned to
-        val module = ProjectFileIndex.getInstance(project).getModuleForFile(venvDir, false)
-        if (module == null) {
-            notify(
-                project,
-                "SDK '${sdk.name}' added, but '${venvDir.name}' is outside any module — assign it manually in Project Structure.",
-                NotificationType.INFORMATION,
-            )
-            return
-        }
-
-        ModuleRootModificationUtil.setModuleSdk(module, sdk)
-        notify(project, "SDK '${sdk.name}' assigned to module '${module.name}'.", NotificationType.INFORMATION)
-    }
-
-    private fun notify(project: Project, content: String, type: NotificationType) {
-        NotificationGroupManager.getInstance()
-            .getNotificationGroup("Add Python SDK")
-            .createNotification(content, type)
-            .notify(project)
+        assignInterpreterToModule(project, interpreter.toString(), venvDir)
     }
 }
