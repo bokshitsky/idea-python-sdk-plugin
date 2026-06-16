@@ -34,6 +34,9 @@ intellijPlatform {
     pluginConfiguration {
         ideaVersion {
             sinceBuild = "242"
+            // No upper bound: the plugin only uses stable APIs, so keep it compatible with
+            // newer IDEs (e.g. PyCharm 2026.1, build 261) instead of capping at the build platform.
+            untilBuild = provider { null }
         }
     }
     buildSearchableOptions = false
