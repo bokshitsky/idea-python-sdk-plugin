@@ -7,8 +7,14 @@ import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.jetbrains.python.sdk.PythonSdkAdditionalData
 import com.jetbrains.python.sdk.PythonSdkType
+import com.jetbrains.python.sdk.flavors.PyFlavorAndData
+import com.jetbrains.python.sdk.flavors.PyFlavorData
+import com.jetbrains.python.sdk.flavors.PythonSdkFlavor
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -22,7 +28,7 @@ import java.nio.file.Paths
  */
 fun assignInterpreterToModule(project: Project, interpreterPath: String, moduleAnchor: VirtualFile) {
     val sdk = ProjectJdkTable.getInstance().allJdks.firstOrNull { sameInterpreter(it.homePath, interpreterPath) }
-        ?: SdkConfigurationUtil.createAndAddSDK(interpreterPath, PythonSdkType.getInstance())
+        ?: createAndAddPythonSdk(interpreterPath)
     if (sdk == null) {
         notify(project, "Failed to create a Python SDK for '$interpreterPath'.", NotificationType.ERROR)
         return
@@ -40,6 +46,29 @@ fun assignInterpreterToModule(project: Project, interpreterPath: String, moduleA
 
     ModuleRootModificationUtil.setModuleSdk(module, sdk)
     notify(project, "SDK '${sdk.name}' assigned to module '${module.name}'.", NotificationType.INFORMATION)
+}
+
+/**
+ * Creates a Python SDK for [interpreterPath] and registers it. The SDK is given
+ * [PythonSdkAdditionalData] up front: newer Python plugins (2026.x) reject an SDK without it
+ * ("created by buggy code"), so the plain SdkConfigurationUtil.createAndAddSDK no longer works.
+ */
+private fun createAndAddPythonSdk(interpreterPath: String): Sdk? {
+    val home = LocalFileSystem.getInstance().refreshAndFindFileByPath(interpreterPath) ?: return null
+    // Venv and Poetry flavors carry no extra data; any other flavor would need its own data type.
+    val flavor = PythonSdkFlavor.getFlavor(interpreterPath)
+        ?.takeIf { it.flavorDataClass == PyFlavorData.Empty::class.java } ?: return null
+    @Suppress("UNCHECKED_CAST")
+    val flavorAndData = PyFlavorAndData(PyFlavorData.Empty, flavor as PythonSdkFlavor<PyFlavorData.Empty>)
+    val sdk = SdkConfigurationUtil.setupSdk(
+        ProjectJdkTable.getInstance().allJdks,
+        home,
+        PythonSdkType.getInstance(),
+        PythonSdkAdditionalData(flavorAndData),
+        null,
+    ) ?: return null
+    SdkConfigurationUtil.addSdk(sdk)
+    return sdk
 }
 
 /**
