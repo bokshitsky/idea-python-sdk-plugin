@@ -1,3 +1,5 @@
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.0.21"
@@ -16,8 +18,9 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity("2024.3.5")
-        plugin("PythonCore", "243.24978.46")
+        intellijIdeaCommunity("2025.1.7")
+        plugin("PythonCore", "251.28293.39")
+        pluginVerifier()
     }
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -33,13 +36,21 @@ kotlin {
 intellijPlatform {
     pluginConfiguration {
         ideaVersion {
-            sinceBuild = "242"
-            // No upper bound: the plugin only uses stable APIs, so keep it compatible with
-            // newer IDEs (e.g. PyCharm 2026.1, build 261) instead of capping at the build platform.
+            // Supported: IDEA/PyCharm 2025.1 and newer (2025.x, 2026.x).
+            sinceBuild = "251"
+            // No upper bound: keep the plugin installable on newer IDEs
+            // instead of capping at the build platform. Check them with ./gradlew verifyPlugin.
             untilBuild = provider { null }
         }
     }
     buildSearchableOptions = false
+
+    pluginVerification {
+        ides {
+            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2025.1.7")
+            ide(IntelliJPlatformType.IntellijIdeaUltimate, "2026.3")
+        }
+    }
 
     publishing {
         token = providers.environmentVariable("IDEA_PYTHON_SDK_PLUGIN_UPLOAD_TOKEN")

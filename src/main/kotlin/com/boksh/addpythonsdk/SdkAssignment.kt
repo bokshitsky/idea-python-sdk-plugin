@@ -2,6 +2,8 @@ package com.boksh.addpythonsdk
 
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.diagnostic.ControlFlowException
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
@@ -60,16 +62,27 @@ private fun createAndAddPythonSdk(interpreterPath: String): Sdk? {
         ?.takeIf { it.flavorDataClass == PyFlavorData.Empty::class.java } ?: return null
     @Suppress("UNCHECKED_CAST")
     val flavorAndData = PyFlavorAndData(PyFlavorData.Empty, flavor as PythonSdkFlavor<PyFlavorData.Empty>)
-    val sdk = SdkConfigurationUtil.setupSdk(
-        ProjectJdkTable.getInstance().allJdks,
-        home,
-        PythonSdkType.getInstance(),
-        PythonSdkAdditionalData(flavorAndData),
-        null,
-    ) ?: return null
+    val sdkType = PythonSdkType.getInstance()
+    // Same steps as the internal SdkConfigurationUtil.setupSdk, done through public API:
+    // create the SDK, then let the Python plugin read its version and library paths.
+    val sdk = try {
+        SdkConfigurationUtil.createSdk(
+            ProjectJdkTable.getInstance().allJdks.asList(),
+            home,
+            sdkType,
+            PythonSdkAdditionalData(flavorAndData),
+            null,
+        ).also(sdkType::setupSdkPaths)
+    } catch (e: Exception) {
+        if (e is ControlFlowException) throw e
+        LOG.warn("Failed to set up a Python SDK for '$interpreterPath'", e)
+        return null
+    }
     SdkConfigurationUtil.addSdk(sdk)
     return sdk
 }
+
+private val LOG = Logger.getInstance("#com.boksh.addpythonsdk")
 
 /**
  * True when [existingHomePath] and [interpreterPath] point to the same interpreter. After an exact
