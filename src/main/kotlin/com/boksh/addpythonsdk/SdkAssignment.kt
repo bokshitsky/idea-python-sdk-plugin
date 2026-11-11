@@ -22,21 +22,25 @@ import java.nio.file.Paths
 
 /**
  * Registers [interpreterPath] as a Python SDK (reusing an existing one that points to the same
- * interpreter) and assigns it to the module that contains [moduleAnchor]. Reports the outcome
+ * interpreter) and assigns it to the module that contains [moduleAnchor]. A newly created SDK is
+ * tied to that module's content root, as the IDE does for venvs it creates. Reports the outcome
  * via balloon.
  *
  * honorExclusion=false: a venv folder is normally excluded from its module, but the excluding
  * module is exactly the one the SDK should be assigned to.
  */
 fun assignInterpreterToModule(project: Project, interpreterPath: String, moduleAnchor: VirtualFile) {
+    val fileIndex = ProjectFileIndex.getInstance(project)
+    val module = fileIndex.getModuleForFile(moduleAnchor, false)
+    val moduleRoot = fileIndex.getContentRootForFile(moduleAnchor, false)?.toNioPath()
+
     val sdk = ProjectJdkTable.getInstance().allJdks.firstOrNull { sameInterpreter(it.homePath, interpreterPath) }
-        ?: createAndAddPythonSdk(interpreterPath)
+        ?: createAndAddPythonSdk(interpreterPath, moduleRoot)
     if (sdk == null) {
         notify(project, "Failed to create a Python SDK for '$interpreterPath'.", NotificationType.ERROR)
         return
     }
 
-    val module = ProjectFileIndex.getInstance(project).getModuleForFile(moduleAnchor, false)
     if (module == null) {
         notify(
             project,
@@ -55,7 +59,7 @@ fun assignInterpreterToModule(project: Project, interpreterPath: String, moduleA
  * [PythonSdkAdditionalData] up front: newer Python plugins (2026.x) reject an SDK without it
  * ("created by buggy code"), so the plain SdkConfigurationUtil.createAndAddSDK no longer works.
  */
-private fun createAndAddPythonSdk(interpreterPath: String): Sdk? {
+private fun createAndAddPythonSdk(interpreterPath: String, moduleRoot: Path?): Sdk? {
     val home = LocalFileSystem.getInstance().refreshAndFindFileByPath(interpreterPath) ?: return null
     // Venv and Poetry flavors carry no extra data; any other flavor would need its own data type.
     val flavor = PythonSdkFlavor.getFlavor(interpreterPath)
@@ -70,7 +74,7 @@ private fun createAndAddPythonSdk(interpreterPath: String): Sdk? {
             ProjectJdkTable.getInstance().allJdks.asList(),
             home,
             sdkType,
-            PythonSdkAdditionalData(flavorAndData),
+            newPythonSdkAdditionalData(flavorAndData, moduleRoot),
             null,
         ).also(sdkType::setupSdkPaths)
     } catch (e: Exception) {
@@ -83,6 +87,29 @@ private fun createAndAddPythonSdk(interpreterPath: String): Sdk? {
 }
 
 private val LOG = Logger.getInstance("#com.boksh.addpythonsdk")
+
+/**
+ * Creates [PythonSdkAdditionalData] with whichever constructor this IDE offers publicly:
+ * - 2026.2+: (PyFlavorAndData, Path) — the Path is the module root the SDK belongs to; the
+ *   single-argument constructor still exists there but is internal and deprecated.
+ * - 2025.1–2026.1: only (PyFlavorAndData).
+ *
+ * Both are looked up by reflection, so one build runs on every supported IDE without calling an
+ * internal API. The cost: the compiler cannot check these calls, so if JetBrains changes the
+ * constructors this fails at run time (reported as "Failed to create a Python SDK").
+ */
+private fun newPythonSdkAdditionalData(flavorAndData: PyFlavorAndData<*, *>, moduleRoot: Path?): PythonSdkAdditionalData {
+    val cls = PythonSdkAdditionalData::class.java
+    if (moduleRoot != null) {
+        val withRoot = try {
+            cls.getConstructor(PyFlavorAndData::class.java, Path::class.java)
+        } catch (_: NoSuchMethodException) {
+            null
+        }
+        if (withRoot != null) return withRoot.newInstance(flavorAndData, moduleRoot)
+    }
+    return cls.getConstructor(PyFlavorAndData::class.java).newInstance(flavorAndData)
+}
 
 /**
  * True when [existingHomePath] and [interpreterPath] point to the same interpreter. After an exact
