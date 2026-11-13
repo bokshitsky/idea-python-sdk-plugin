@@ -11,6 +11,8 @@ as a Python SDK and assigns it to the module that contains the folder.
 - Adds an **Add Python SDK → From Poetry** submenu to the right-click menu of module
   folders that contain a `pyproject.toml`. It runs `poetry env info --path` in that folder
   and uses the currently active Poetry virtualenv.
+- Adds **Add Python SDK → From uv** to the same submenu. It runs `uv python find` in that
+  folder and uses the uv project virtualenv.
 - Discovers the interpreter inside the folder (`bin/python3`, `bin/python` on Unix,
   `Scripts/python.exe` on Windows).
 - Reuses an existing SDK with the same interpreter path instead of creating duplicates.
@@ -48,6 +50,16 @@ Compatible with builds since `242` (2024.2 and later).
 
    Requires `poetry` to be on your shell `PATH` and an environment to exist
    (`poetry install`).
+
+### From uv
+
+1. Right-click a module folder that contains a `pyproject.toml` in the Project View.
+2. Choose **Add Python SDK → From uv**.
+3. The plugin runs `uv python find` in that folder, registers the interpreter of the uv
+   project virtualenv (also for workspace members) as a Python SDK, and assigns it to the
+   module. A notification confirms the result.
+
+   Requires `uv` to be on your shell `PATH` and an environment to exist (`uv sync`).
 
 ## Build plugin
 

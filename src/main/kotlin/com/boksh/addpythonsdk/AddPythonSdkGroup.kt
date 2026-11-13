@@ -7,7 +7,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 
 /**
  * The "Add Python SDK" submenu shown on module directories. Visible only when the selected
- * directory contains a pyproject.toml (a Poetry project marker).
+ * directory contains a pyproject.toml (a Poetry or uv project marker).
  */
 class AddPythonSdkGroup : DefaultActionGroup() {
 
